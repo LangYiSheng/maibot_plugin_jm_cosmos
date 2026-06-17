@@ -98,11 +98,6 @@ class JMConfigManager:
         return self.plugin_config.get("send_cover_preview", True)
 
     @property
-    def cover_recall_enabled(self) -> bool:
-        """是否启用封面消息自动撤回"""
-        return self.plugin_config.get("cover_recall_enabled", False)
-
-    @property
     def admin_only(self) -> bool:
         """是否仅管理员可用"""
         return self.plugin_config.get("admin_only", False)
@@ -140,16 +135,6 @@ class JMConfigManager:
     def jm_password(self) -> str:
         """JM账号密码"""
         return self.plugin_config.get("jm_password", "")
-
-    @property
-    def auto_recall_enabled(self) -> bool:
-        """是否启用自动撤回"""
-        return self.plugin_config.get("auto_recall_enabled", False)
-
-    @property
-    def auto_recall_delay(self) -> int:
-        """自动撤回延迟（秒）"""
-        return self.plugin_config.get("auto_recall_delay", 60)
 
     @property
     def daily_download_limit(self) -> int:

@@ -20,23 +20,39 @@ from .utils import MessageFormatter, generate_album_filename
 logger = logging.getLogger(__name__)
 
 
-class JMCosmosPluginSection(PluginConfigBase):
-    __ui_label__ = "插件配置"
+class PluginSection(PluginConfigBase):
+    __ui_label__ = "插件"
 
-    config_version: str = Field(default="1.0.0", description="配置版本，请勿手动修改")
+    config_version: str = Field(default="1.0.1", description="配置版本，请勿手动修改")
+    enabled: bool = Field(default=True, description="是否启用插件")
+
+
+class DownloadSection(PluginConfigBase):
+    __ui_label__ = "下载"
+
     download_dir: str = Field(default="./downloads", description="漫画下载目录")
     image_suffix: str = Field(default=".jpg", description="下载图片格式")
     client_type: str = Field(
         default="api",
         description="JM 客户端类型：api 兼容性更好，html 效率更高",
     )
+    max_concurrent_photos: int = Field(default=3, description="最大并发章节数")
+    max_concurrent_images: int = Field(default=5, description="每章节最大并发图片数")
+
+
+class NetworkSection(PluginConfigBase):
+    __ui_label__ = "网络"
+
     use_proxy: bool = Field(default=False, description="是否使用代理访问 JM")
     proxy_url: str = Field(
         default="",
         description="代理地址，如 http://host:port 或 socks5://host:port",
     )
-    max_concurrent_photos: int = Field(default=3, description="最大并发章节数")
-    max_concurrent_images: int = Field(default=5, description="每章节最大并发图片数")
+
+
+class PackageSection(PluginConfigBase):
+    __ui_label__ = "打包"
+
     pack_format: str = Field(
         default="zip",
         description="下载完成后的打包格式：zip、pdf、none",
@@ -50,34 +66,46 @@ class JMCosmosPluginSection(PluginConfigBase):
         default=True,
         description="发送完成后自动删除本地产物",
     )
+
+
+class BehaviorSection(PluginConfigBase):
+    __ui_label__ = "行为"
+
     send_cover_preview: bool = Field(default=True, description="下载前发送封面预览")
-    cover_recall_enabled: bool = Field(
-        default=False,
-        description="保留配置项；MaiBot 侧暂不实现自动撤回封面消息",
-    )
-    auto_recall_enabled: bool = Field(
-        default=False,
-        description="保留配置项；MaiBot 侧暂不实现自动撤回文件消息",
-    )
-    auto_recall_delay: int = Field(default=60, description="自动撤回延迟秒数")
-    enabled_groups: str = Field(
-        default="",
-        description="允许使用的群号列表，逗号分隔，留空表示全部启用",
-    )
-    admin_only: bool = Field(default=False, description="是否仅管理员可用")
-    admin_list: str = Field(
-        default="",
-        description="管理员用户 ID 列表，逗号分隔",
-    )
-    jm_username: str = Field(default="", description="JM 登录用户名")
-    jm_password: str = Field(default="", description="JM 登录密码")
     search_page_size: int = Field(default=5, description="搜索/榜单单页展示数量")
     daily_download_limit: int = Field(default=0, description="每用户每日下载次数限制，0 表示不限")
     debug_mode: bool = Field(default=False, description="是否启用调试日志")
 
 
+class AccessSection(PluginConfigBase):
+    __ui_label__ = "权限"
+
+    admin_only: bool = Field(default=False, description="是否仅管理员可用")
+    admin_list: str = Field(
+        default="",
+        description="管理员用户 ID 列表，逗号分隔",
+    )
+    enabled_groups: str = Field(
+        default="",
+        description="允许使用的群号列表，逗号分隔，留空表示全部启用",
+    )
+
+
+class AccountSection(PluginConfigBase):
+    __ui_label__ = "账号"
+
+    jm_username: str = Field(default="", description="JM 登录用户名")
+    jm_password: str = Field(default="", description="JM 登录密码")
+
+
 class JMCosmosConfig(PluginConfigBase):
-    plugin: JMCosmosPluginSection = Field(default_factory=JMCosmosPluginSection)
+    plugin: PluginSection = Field(default_factory=PluginSection)
+    download: DownloadSection = Field(default_factory=DownloadSection)
+    network: NetworkSection = Field(default_factory=NetworkSection)
+    package: PackageSection = Field(default_factory=PackageSection)
+    behavior: BehaviorSection = Field(default_factory=BehaviorSection)
+    access: AccessSection = Field(default_factory=AccessSection)
+    account: AccountSection = Field(default_factory=AccountSection)
 
 
 class JMCosmosMaiBotPlugin(MaiBotPlugin):
@@ -102,14 +130,36 @@ class JMCosmosMaiBotPlugin(MaiBotPlugin):
         self.data_dir = Path(__file__).parent / "data"
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
-        raw_config = self.get_plugin_config_data()
-        plugin_config = dict(raw_config.get("plugin", {}))
-        self.config_manager = JMConfigManager(plugin_config, self.data_dir)
+        self.config_manager = JMConfigManager(self._flatten_config(), self.data_dir)
         self.download_manager = JMDownloadManager(self.config_manager)
         self.browser = JMBrowser(self.config_manager)
         self.auth_manager = JMAuthManager(self.config_manager)
         self.quota_manager = DownloadQuotaManager(self.data_dir / "quota.db")
         self.debug_mode = self.config_manager.debug_mode
+
+    def _flatten_config(self) -> dict[str, Any]:
+        return {
+            "download_dir": self.config.download.download_dir,
+            "image_suffix": self.config.download.image_suffix,
+            "client_type": self.config.download.client_type,
+            "max_concurrent_photos": self.config.download.max_concurrent_photos,
+            "max_concurrent_images": self.config.download.max_concurrent_images,
+            "use_proxy": self.config.network.use_proxy,
+            "proxy_url": self.config.network.proxy_url,
+            "pack_format": self.config.package.pack_format,
+            "pack_password": self.config.package.pack_password,
+            "filename_show_password": self.config.package.filename_show_password,
+            "auto_delete_after_send": self.config.package.auto_delete_after_send,
+            "send_cover_preview": self.config.behavior.send_cover_preview,
+            "search_page_size": self.config.behavior.search_page_size,
+            "daily_download_limit": self.config.behavior.daily_download_limit,
+            "debug_mode": self.config.behavior.debug_mode,
+            "admin_only": self.config.access.admin_only,
+            "admin_list": self.config.access.admin_list,
+            "enabled_groups": self.config.access.enabled_groups,
+            "jm_username": self.config.account.jm_username,
+            "jm_password": self.config.account.jm_password,
+        }
 
     def _check_permission(self, user_id: str, group_id: str) -> tuple[bool, str]:
         if not self.config_manager.is_admin(user_id):

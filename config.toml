@@ -1,25 +1,35 @@
 [plugin]
-config_version = "1.0.0"
+config_version = "1.0.1"
+enabled = true
+
+[download]
 download_dir = "./downloads"
 image_suffix = ".jpg"
 client_type = "api"
-use_proxy = false
-proxy_url = ""
 max_concurrent_photos = 3
 max_concurrent_images = 5
+
+[network]
+use_proxy = false
+proxy_url = ""
+
+[package]
 pack_format = "zip"
 pack_password = ""
 filename_show_password = false
 auto_delete_after_send = true
+
+[behavior]
 send_cover_preview = true
-cover_recall_enabled = false
-auto_recall_enabled = false
-auto_recall_delay = 60
-enabled_groups = ""
-admin_only = false
-admin_list = ""
-jm_username = ""
-jm_password = ""
 search_page_size = 5
 daily_download_limit = 0
 debug_mode = false
+
+[access]
+admin_only = false
+admin_list = ""
+enabled_groups = ""
+
+[account]
+jm_username = ""
+jm_password = ""
