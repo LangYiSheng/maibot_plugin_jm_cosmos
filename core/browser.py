@@ -4,9 +4,10 @@ JMComic 浏览查询模块
 提供搜索、详情查看、排行榜等浏览功能。
 """
 
+import logging
 from pathlib import Path
 
-from astrbot.api import logger
+logger = logging.getLogger(__name__)
 
 from .base import JMClientMixin, JMConfigManager
 from .constants import (

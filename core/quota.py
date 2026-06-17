@@ -5,11 +5,12 @@
 用户标识使用 QQ 号（或其他平台的 user_id）。
 """
 
+import logging
 import sqlite3
 from datetime import date
 from pathlib import Path
 
-from astrbot.api import logger
+logger = logging.getLogger(__name__)
 
 
 class DownloadQuotaManager:

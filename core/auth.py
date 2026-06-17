@@ -5,8 +5,9 @@ JMComic 认证管理模块
 """
 
 import json
+import logging
 
-from astrbot.api import logger
+logger = logging.getLogger(__name__)
 
 from .base import JMClientMixin, JMConfigManager
 

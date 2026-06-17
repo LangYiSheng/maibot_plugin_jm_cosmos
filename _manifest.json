@@ -1,0 +1,54 @@
+{
+  "manifest_version": 2,
+  "id": "gemiluxvii.jm-cosmos2",
+  "version": "2.6.8",
+  "name": "JM-Cosmos II",
+  "description": "JM漫画下载插件，适配 MaiBot，支持搜索、详情、排行、推荐、登录收藏与本子/章节下载打包。",
+  "author": {
+    "name": "GEMILUXVII",
+    "url": "https://github.com/GEMILUXVII"
+  },
+  "license": "GPL-3.0-only",
+  "urls": {
+    "repository": "https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos",
+    "homepage": "https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos"
+  },
+  "host_application": {
+    "min_version": "1.0.0",
+    "max_version": "1.99.99"
+  },
+  "sdk": {
+    "min_version": "2.0.0",
+    "max_version": "2.99.99"
+  },
+  "dependencies": [
+    {
+      "type": "python_package",
+      "name": "jmcomic",
+      "version_spec": ">=2.6.10"
+    },
+    {
+      "type": "python_package",
+      "name": "pymupdf",
+      "version_spec": ">=1.23.0"
+    },
+    {
+      "type": "python_package",
+      "name": "pyzipper",
+      "version_spec": ">=0.3.6"
+    }
+  ],
+  "capabilities": [
+    "send.text",
+    "send.image",
+    "send.forward",
+    "send.file",
+    "config.get"
+  ],
+  "i18n": {
+    "default_locale": "zh-CN",
+    "supported_locales": [
+      "zh-CN"
+    ]
+  }
+}

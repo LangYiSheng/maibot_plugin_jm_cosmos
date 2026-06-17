@@ -1,0 +1,25 @@
+[plugin]
+config_version = "1.0.0"
+download_dir = "./downloads"
+image_suffix = ".jpg"
+client_type = "api"
+use_proxy = false
+proxy_url = ""
+max_concurrent_photos = 3
+max_concurrent_images = 5
+pack_format = "zip"
+pack_password = ""
+filename_show_password = false
+auto_delete_after_send = true
+send_cover_preview = true
+cover_recall_enabled = false
+auto_recall_enabled = false
+auto_recall_delay = 60
+enabled_groups = ""
+admin_only = false
+admin_list = ""
+jm_username = ""
+jm_password = ""
+search_page_size = 5
+daily_download_limit = 0
+debug_mode = false
