@@ -150,9 +150,84 @@ class JMCosmosMaiBotPlugin(MaiBotPlugin):
             await self._send_image_path(stream_id, cover_path)
         await self._send_text(stream_id, MessageFormatter.format_album_info(detail))
 
+    async def _is_api_available(self, api_name: str) -> bool:
+        try:
+            info = await self.ctx.api.get(api_name)
+            if info is not None:
+                return True
+        except Exception as exc:
+            self.ctx.logger.debug("查询 API %s 失败，尝试 list 回退: %s", api_name, exc)
+
+        try:
+            apis = await self.ctx.api.list()
+        except Exception as exc:
+            self.ctx.logger.debug("列出可见 API 失败: %s", exc)
+            return False
+
+        for item in apis or []:
+            if not item:
+                continue
+            if isinstance(item, str) and item == api_name:
+                return True
+            if isinstance(item, dict):
+                full_name = item.get("name") or item.get("api_name")
+                short_name = item.get("short_name")
+                if api_name in {full_name, short_name}:
+                    return True
+        return False
+
+    async def _call_napcat_file_api(
+        self,
+        output_path: Path,
+        user_id: str,
+        group_id: str,
+    ) -> tuple[bool, str]:
+        if group_id:
+            api_name = "adapter.napcat.file.upload_group_file"
+            params = {
+                "group_id": int(group_id) if str(group_id).isdigit() else group_id,
+                "file": str(output_path),
+                "name": output_path.name,
+            }
+            target_type = "group"
+        elif user_id:
+            api_name = "adapter.napcat.file.upload_private_file"
+            params = {
+                "user_id": int(user_id) if str(user_id).isdigit() else user_id,
+                "file": str(output_path),
+                "name": output_path.name,
+            }
+            target_type = "private"
+        else:
+            return False, "missing-target"
+
+        if not await self._is_api_available(api_name):
+            self.ctx.logger.warning("Napcat 文件 API 不可见: %s", api_name)
+            return False, f"api-unavailable:{api_name}"
+
+        try:
+            result = await self.ctx.api.call(api_name, params=params)
+            self.ctx.logger.info(
+                "Napcat 文件 API 调用完成: api=%s target=%s result=%s",
+                api_name,
+                target_type,
+                result,
+            )
+            return True, api_name
+        except Exception as exc:
+            self.ctx.logger.warning(
+                "Napcat 文件 API 调用失败: api=%s target=%s error=%s",
+                api_name,
+                target_type,
+                exc,
+            )
+            return False, f"{api_name}: {exc}"
+
     async def _send_file_result(
         self,
         stream_id: str,
+        user_id: str,
+        group_id: str,
         result_msg: str,
         pack_result: Any,
         cleanup_paths: list[Path] | None = None,
@@ -167,39 +242,18 @@ class JMCosmosMaiBotPlugin(MaiBotPlugin):
             await self._send_text(stream_id, result_msg)
             return
 
-        sent = False
         output_path = Path(pack_result.output_path)
-        send_proxy = self.ctx.send
-        attempted: list[str] = []
-
-        for method_name, call in (
-            ("file", lambda fn: fn(output_path.name, str(output_path), stream_id)),
-            ("file", lambda fn: fn(str(output_path), stream_id)),
-            ("document", lambda fn: fn(str(output_path), stream_id)),
-        ):
-            method = getattr(send_proxy, method_name, None)
-            if method is None:
-                continue
-            attempted.append(method_name)
-            try:
-                await self._send_text(stream_id, result_msg)
-                await call(method)
-                sent = True
-                break
-            except TypeError:
-                continue
-            except Exception as exc:
-                self.ctx.logger.warning("文件发送方法 %s 失败: %s", method_name, exc)
+        await self._send_text(stream_id, result_msg)
+        sent, detail = await self._call_napcat_file_api(output_path, user_id, group_id)
 
         if not sent:
-            attempted_desc = ", ".join(attempted) if attempted else "none"
             self.ctx.logger.warning(
-                "未找到可用的文件发送接口，已降级为文本提示，尝试过: %s",
-                attempted_desc,
+                "文件发送已降级为文本提示: %s",
+                detail,
             )
             await self._send_text(
                 stream_id,
-                f"{result_msg}\n文件已生成：{output_path.name}\n本地路径：{output_path}",
+                f"文件已生成：{output_path.name}\n本地路径：{output_path}",
             )
 
         if sent and self.config_manager.auto_delete_after_send:
@@ -292,6 +346,8 @@ class JMCosmosMaiBotPlugin(MaiBotPlugin):
                 cleanup_paths.append(Path(pack_result.output_path))
             await self._send_file_result(
                 stream_id,
+                user_id,
+                group_id,
                 result_msg,
                 pack_result,
                 cleanup_paths=cleanup_paths,
@@ -393,6 +449,8 @@ class JMCosmosMaiBotPlugin(MaiBotPlugin):
                 cleanup_paths.append(Path(pack_result.output_path))
             await self._send_file_result(
                 stream_id,
+                user_id,
+                group_id,
                 result_msg,
                 pack_result,
                 cleanup_paths=cleanup_paths,
