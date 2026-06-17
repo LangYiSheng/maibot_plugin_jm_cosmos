@@ -2,25 +2,15 @@
   <img src="logo.png" alt="AstrBot JM-Cosmos II Plugin Logo" width="160" />
 </div>
 
-# <div align="center">JM-Cosmos II</div>
+# <div align="center">JM-Cosmos II for MaiBot</div>
+
+> [!NOTE]
+> 本仓库是基于原项目 [GEMILUXVII/astrbot_plugin_jm_cosmos](https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos) 从 AstrBot 适配到 MaiBot 的版本。
 
 <div align="center">
   <strong>全能型 JM 漫画下载与管理工具</strong>
 </div>
 
-<br>
-<div align="center">
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/VERSION-v2.6.8-E91E63?style=for-the-badge" alt="Version"></a>
-  <a href="https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-009688?style=for-the-badge" alt="License"></a>
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/PYTHON-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"></a>
-  <a href="https://github.com/AstrBotDevs/AstrBot"><img src="https://img.shields.io/badge/AstrBot-Compatible-00BFA5?style=for-the-badge&logo=robot&logoColor=white" alt="AstrBot Compatible"></a>
-</div>
-
-<div align="center">
-  <a href="https://pypi.org/project/jmcomic/"><img src="https://img.shields.io/badge/JMCOMIC-≥2.6.10-9C27B0?style=for-the-badge" alt="JMComic"></a>
-  <a href="https://github.com/botuniverse/onebot-11"><img src="https://img.shields.io/badge/OneBotv11-AIOCQHTTP-FF5722?style=for-the-badge&logo=qq&logoColor=white" alt="OneBot v11 Support"></a>
-  <a href="https://github.com/GEMILUXVII/astrbot_plugin_jm_cosmos"><img src="https://img.shields.io/badge/UPDATED-2026.06.14-2196F3?style=for-the-badge" alt="Updated"></a>
-</div>
 
 ## 介绍
 

@@ -43,6 +43,7 @@
     "send.image",
     "send.forward",
     "send.file",
+    "api.call",
     "config.get"
   ],
   "i18n": {

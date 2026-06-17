@@ -150,32 +150,6 @@ class JMCosmosMaiBotPlugin(MaiBotPlugin):
             await self._send_image_path(stream_id, cover_path)
         await self._send_text(stream_id, MessageFormatter.format_album_info(detail))
 
-    async def _is_api_available(self, api_name: str) -> bool:
-        try:
-            info = await self.ctx.api.get(api_name)
-            if info is not None:
-                return True
-        except Exception as exc:
-            self.ctx.logger.debug("查询 API %s 失败，尝试 list 回退: %s", api_name, exc)
-
-        try:
-            apis = await self.ctx.api.list()
-        except Exception as exc:
-            self.ctx.logger.debug("列出可见 API 失败: %s", exc)
-            return False
-
-        for item in apis or []:
-            if not item:
-                continue
-            if isinstance(item, str) and item == api_name:
-                return True
-            if isinstance(item, dict):
-                full_name = item.get("name") or item.get("api_name")
-                short_name = item.get("short_name")
-                if api_name in {full_name, short_name}:
-                    return True
-        return False
-
     async def _call_napcat_file_api(
         self,
         output_path: Path,
@@ -200,10 +174,6 @@ class JMCosmosMaiBotPlugin(MaiBotPlugin):
             target_type = "private"
         else:
             return False, "missing-target"
-
-        if not await self._is_api_available(api_name):
-            self.ctx.logger.warning("Napcat 文件 API 不可见: %s", api_name)
-            return False, f"api-unavailable:{api_name}"
 
         try:
             result = await self.ctx.api.call(api_name, params=params)
